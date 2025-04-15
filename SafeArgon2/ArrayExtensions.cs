@@ -5,7 +5,7 @@ namespace SafeArgon2
     public static class ArrayExtensions
     {
         // TODO: Check this method implementation. Compare with original version.
-        public static void Blit(this ulong[] toBlit, byte[] bytes, int destOffset = 0)
+        public static void Blit(this ArraySegment<ulong> toBlit, ArraySegment<byte> bytes, int destOffset = 0)
         {
             if (bytes == null)
             {
@@ -17,10 +17,10 @@ namespace SafeArgon2
                 throw new ArgumentNullException(nameof(toBlit));
             }
 
-            int fullUlongs = bytes.Length / 8;
-            int remainder = bytes.Length % 8;
+            int fullUlongs = bytes.Count / 8;
+            int remainder = bytes.Count % 8;
 
-            if (fullUlongs > toBlit.Length - destOffset)
+            if (fullUlongs > toBlit.Count - destOffset)
             {
                 throw new ArgumentException("Cannot write more than remaining space");
             }
@@ -30,15 +30,15 @@ namespace SafeArgon2
             {
                 int byteIndex = i * 8;
 
-                toBlit[destOffset + i] =
-                    ((ulong)bytes[byteIndex]) |
-                    ((ulong)bytes[byteIndex + 1] << 8) |
-                    ((ulong)bytes[byteIndex + 2] << 16) |
-                    ((ulong)bytes[byteIndex + 3] << 24) |
-                    ((ulong)bytes[byteIndex + 4] << 32) |
-                    ((ulong)bytes[byteIndex + 5] << 40) |
-                    ((ulong)bytes[byteIndex + 6] << 48) |
-                    ((ulong)bytes[byteIndex + 7] << 56);
+                toBlit.Array[toBlit.Offset + destOffset + i] =
+                    ((ulong)bytes.Array[bytes.Offset + byteIndex]) |
+                    ((ulong)bytes.Array[bytes.Offset + byteIndex + 1] << 8) |
+                    ((ulong)bytes.Array[bytes.Offset + byteIndex + 2] << 16) |
+                    ((ulong)bytes.Array[bytes.Offset + byteIndex + 3] << 24) |
+                    ((ulong)bytes.Array[bytes.Offset + byteIndex + 4] << 32) |
+                    ((ulong)bytes.Array[bytes.Offset + byteIndex + 5] << 40) |
+                    ((ulong)bytes.Array[bytes.Offset + byteIndex + 6] << 48) |
+                    ((ulong)bytes.Array[bytes.Offset + byteIndex + 7] << 56);
             }
 
             // Handle remaining bytes (1–7).
@@ -50,15 +50,15 @@ namespace SafeArgon2
 
                 for (int i = 0; i < remainder; i++)
                 {
-                    extra |= ((ulong)bytes[byteIndex + i]) << (8 * i);
+                    extra |= ((ulong)bytes.Array[bytes.Offset + byteIndex + i]) << (8 * i);
                 }
 
-                if (destOffset + fullUlongs >= toBlit.Length)
+                if (destOffset + fullUlongs >= toBlit.Count)
                 {
                     throw new ArgumentException("Not enough space for remainder");
                 }
 
-                toBlit[destOffset + fullUlongs] = extra;
+                toBlit.Array[toBlit.Offset + destOffset + fullUlongs] = extra;
             }
         }
     }

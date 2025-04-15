@@ -35,25 +35,18 @@ namespace SafeArgon2
         {
             var rands = new ulong[segmentLength];
 
-            // TODO: Check this.
             var ulongRaw = new ulong[384];
 
-            //// TODO: Try replace Array.Copy with ArraySegment here and futher.
-            var inputBlock = new ulong[128];
-            var addressBlock = new ulong[128];
-            var tmpBlock = new ulong[128];
+            var inputBlock = new ArraySegment<ulong>(ulongRaw, 0, 128);
+            var addressBlock = new ArraySegment<ulong>(ulongRaw, 128, 128);
+            var tmpBlock = new ArraySegment<ulong>(ulongRaw, 256, 128);
 
-            Array.Copy(ulongRaw, 0, inputBlock, 0, 128);
-            Array.Copy(ulongRaw, 128, addressBlock, 0, 128);
-            Array.Copy(ulongRaw, 256, tmpBlock, 0, 128);
-            ////
-
-            inputBlock[0] = (ulong)pass;
-            inputBlock[1] = (ulong)lane;
-            inputBlock[2] = (ulong)slice;
-            inputBlock[3] = (ulong)MemorySize;
-            inputBlock[4] = (ulong)Iterations;
-            inputBlock[5] = (ulong)Type;
+            inputBlock.Array[inputBlock.Offset + 0] = (ulong)pass;
+            inputBlock.Array[inputBlock.Offset + 1] = (ulong)lane;
+            inputBlock.Array[inputBlock.Offset + 2] = (ulong)slice;
+            inputBlock.Array[inputBlock.Offset + 3] = (ulong)MemorySize;
+            inputBlock.Array[inputBlock.Offset + 4] = (ulong)Iterations;
+            inputBlock.Array[inputBlock.Offset + 5] = (ulong)Type;
 
             for (var i = 0; i < segmentLength; i++)
             {
@@ -61,21 +54,16 @@ namespace SafeArgon2
 
                 if (ival == 0)
                 {
-                    inputBlock[6]++;
+                    inputBlock.Array[inputBlock.Offset + 6]++;
 
-                    //// TODO: Ensure memore block zeroing is correct here.
-                    //tmpBlock.Fill(0);
-                    //addressBlock.Fill(0);
+                    Array.Clear(tmpBlock.Array, tmpBlock.Offset, tmpBlock.Count);
+                    Array.Clear(addressBlock.Array, addressBlock.Offset, addressBlock.Count);
 
-                    Array.Clear(tmpBlock, 0, tmpBlock.Length);
-                    Array.Clear(addressBlock, 0, addressBlock.Length);
-                    ////
-
-                    Compress(tmpBlock, inputBlock, _zeroBlock);
-                    Compress(addressBlock, tmpBlock, _zeroBlock);
+                    Compress(tmpBlock, inputBlock, new ArraySegment<ulong>(_zeroBlock, 0, 128));
+                    Compress(addressBlock, tmpBlock, new ArraySegment<ulong>(_zeroBlock, 0, 128));
                 }
 
-                rands[i] = addressBlock[ival];
+                rands[i] = addressBlock.Array[addressBlock.Offset + ival];
             }
 
             return new PseudoRands(rands);

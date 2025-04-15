@@ -13,7 +13,9 @@
 
             public ulong PseudoRand(int segment, int prevLane, int prevOffset)
             {
-                return _lanes[prevLane][prevOffset][0];
+                var mem = _lanes[prevLane][prevOffset];
+
+                return mem.Array[mem.Offset + 0];
             }
         }
 

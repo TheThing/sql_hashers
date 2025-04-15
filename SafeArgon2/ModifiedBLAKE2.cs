@@ -59,13 +59,13 @@ namespace SafeArgon2
             ModifiedG(v, i + 17, i + 32, i + 65, i + 112);
         }
 
-        public static void Blake2Prime(ulong[] memory, LittleEndianActiveStream dataStream, int size = -1)
+        public static void Blake2Prime(ArraySegment<ulong> memory, LittleEndianActiveStream dataStream, int size = -1)
         {
             var hashStream = new LittleEndianActiveStream();
 
-            if (size < 0 || size > (memory.Length * 8))
+            if (size < 0 || size > (memory.Count * 8))
             {
-                size = memory.Length * 8;
+                size = memory.Count * 8;
             }
 
             hashStream.Expose(size);
@@ -77,8 +77,7 @@ namespace SafeArgon2
 
                 blake2.Initialize();
                 
-                // TODO: Check it.
-                memory.Blit(blake2.ComputeHash(hashStream), 0);
+                memory.Blit(new ArraySegment<byte>(blake2.ComputeHash(hashStream)), 0);
             }
             else
             {
@@ -90,13 +89,9 @@ namespace SafeArgon2
 
                 var chunk = blake2.ComputeHash(hashStream);
 
-                //// TODO: Make sure the slice is taken properly.
-                byte[] slice = new byte[32];
-
-                Array.Copy(chunk, 0, slice, 0, 32);
+                var slice = new ArraySegment<byte>(chunk, 0, 32);
 
                 memory.Blit(slice, offset); // copy half of the chunk
-                ////
 
                 offset += 4;
                 size -= 32;
@@ -107,11 +102,9 @@ namespace SafeArgon2
 
                     chunk = blake2.ComputeHash(chunk);
 
-                    //// TODO: Check this.
-                    Array.Copy(chunk, 0, slice, 0, 32);
+                    slice = new ArraySegment<byte>(chunk, 0, 32);
 
                     memory.Blit(slice, offset); // half again
-                    ////
 
                     offset += 4;
                     size -= 32;
@@ -121,13 +114,9 @@ namespace SafeArgon2
 
                 blake2.Initialize();
 
-                //// TODO: Check it.
-                slice = new byte[size];
-
-                Array.Copy(chunk, 0, slice, 0, size);
+                slice = new ArraySegment<byte>(chunk, 0, size);
 
                 memory.Blit(slice, offset); // copy the rest
-                ////
             }
         }
     }

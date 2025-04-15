@@ -46,7 +46,7 @@ namespace SafeArgon2
             }
         }
 
-        public void Expose(ulong[] mem)
+        public void Expose(ArraySegment<ulong> mem)
         {
             _bufferSetupActions.AddLast(() => BufferSpan(mem));
         }
@@ -159,14 +159,13 @@ namespace SafeArgon2
             Array.Copy(value, offset, _buffer, 0, length);
         }
 
-        // TODO: Make sure it works properly. Possible change name.
-        private void BufferSpan(ulong[] value)
+        private void BufferSpan(ArraySegment<ulong> mem)
         {
-            int byteLength = value.Length * sizeof(ulong);
+            int byteLength = mem.Count * sizeof(ulong);
 
             ReserveBuffer(byteLength);
 
-            Buffer.BlockCopy(value, 0, _buffer, 0, byteLength);
+            Buffer.BlockCopy(mem.Array, mem.Offset, _buffer, 0, byteLength);
         }
 
         private void BufferShort(ushort value)

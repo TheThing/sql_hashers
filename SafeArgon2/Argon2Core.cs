@@ -94,17 +94,17 @@ namespace SafeArgon2
                 {
                     if (!BitConverter.IsLittleEndian)
                     {
-                        block[b] = (block[b] >> 56) ^
-                            ((block[b] >> 40) & 0xff00UL) ^
-                            ((block[b] >> 24) & 0xff0000UL) ^
-                            ((block[b] >> 8) & 0xff000000UL) ^
-                            ((block[b] << 8) & 0xff00000000UL) ^
-                            ((block[b] << 24) & 0xff0000000000UL) ^
-                            ((block[b] << 40) & 0xff000000000000UL) ^
-                            ((block[b] << 56) & 0xff00000000000000UL);
+                        block.Array[block.Offset + b] = (block.Array[block.Offset + b] >> 56) ^
+                            ((block.Array[block.Offset + b] >> 40) & 0xff00UL) ^
+                            ((block.Array[block.Offset + b] >> 24) & 0xff0000UL) ^
+                            ((block.Array[block.Offset + b] >> 8) & 0xff000000UL) ^
+                            ((block.Array[block.Offset + b] << 8) & 0xff00000000UL) ^
+                            ((block.Array[block.Offset + b] << 24) & 0xff0000000000UL) ^
+                            ((block.Array[block.Offset + b] << 40) & 0xff000000000000UL) ^
+                            ((block.Array[block.Offset + b] << 56) & 0xff00000000000000UL);
                     }
 
-                    data[b] ^= block[b];
+                    data.Array[data.Offset + b] ^= block.Array[block.Offset + b];
                 }
             }
         }
@@ -124,13 +124,13 @@ namespace SafeArgon2
             //// TODO: Double check if new code is equivalent to original here.
             
             //var tmp = MemoryMarshal.Cast<ulong, byte>(lanes[0][1].Span).Slice(0, result.Length);
-            ulong[] source = lanes[0][1];
+            ArraySegment<ulong> source = lanes[0][1];
 
             int byteCount = result.Length;
 
             byte[] tmp = new byte[byteCount];
 
-            int maxUlongBytes = Math.Min(byteCount, source.Length * 8);
+            int maxUlongBytes = Math.Min(byteCount, source.Count * 8);
 
             // Convert each ulong into 8 bytes (little-endian).
             for (int i = 0; i < maxUlongBytes; i++)
@@ -139,7 +139,7 @@ namespace SafeArgon2
                 int byteOffset = i % 8;
 
                 // TODO: Check it under debug.
-                tmp[i] = (byte)(source[ulongIndex] >> (8 * byteOffset));
+                tmp[i] = (byte)(source.Array[source.Offset + ulongIndex] >> (8 * byteOffset));
             }
             ////
 
@@ -149,16 +149,16 @@ namespace SafeArgon2
             return result;
         }
 
-        internal static void Compress(ulong[] dest, ulong[] refb, ulong[] prev)
+        internal static void Compress(ArraySegment<ulong> dest, ArraySegment<ulong> refb, ArraySegment<ulong> prev)
         {
             // TODO: Think about performance here.
-            var tmpblock = new ulong[dest.Length];
+            var tmpblock = new ulong[dest.Count];
 
             for (var n = 0; n < 128; ++n)
             {
-                tmpblock[n] = refb[n] ^ prev[n];
+                tmpblock[n] = refb.Array[dest.Offset + n] ^ prev.Array[prev.Offset + n];
 
-                dest[n] ^= tmpblock[n];
+                dest.Array[dest.Offset + n] ^= tmpblock[n];
             }
 
             for (var i = 0; i < 8; ++i)
@@ -173,7 +173,7 @@ namespace SafeArgon2
 
             for (var n = 0; n < 128; ++n)
             {
-                dest[n] ^= tmpblock[n];
+                dest.Array[dest.Offset + n] ^= tmpblock[n];
             }
         }
 
