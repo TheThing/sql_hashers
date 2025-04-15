@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 
 namespace SafeArgon2
 {
@@ -59,6 +60,23 @@ namespace SafeArgon2
 
             HashCore(data, 0, data.Length);
             
+            return HashFinal();
+        }
+
+        public byte[] ComputeHash(Stream inputStream)
+        {
+            // TODO: Check this implementation. It may be wrong.
+            Initialize();
+
+            byte[] buffer = new byte[4096]; // 4 KB buffer
+
+            int bytesRead;
+
+            while ((bytesRead = inputStream.Read(buffer, 0, buffer.Length)) > 0)
+            {
+                HashCore(buffer, 0, bytesRead);
+            }
+
             return HashFinal();
         }
 

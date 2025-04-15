@@ -41,10 +41,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Argon2iCore.cs" />
+    <Compile Include="Argon2Lane.cs" />
+    <Compile Include="ArrayExtensions.cs" />
     <Compile Include="BLAKE2bBase.cs" />
     <Compile Include="BLAKE2bNormal.cs" />
     <Compile Include="BLAKE2Constants.cs" />
     <Compile Include="BLAKE2b.cs" />
+    <Compile Include="Argon2Core.cs" />
+    <Compile Include="IArgon2PseudoRands.cs" />
+    <Compile Include="LittleEndianActiveStream.cs" />
+    <Compile Include="ModifiedBLAKE2.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

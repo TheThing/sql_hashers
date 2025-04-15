@@ -21,6 +21,7 @@ namespace SafeArgon2
                 }
 
                 // TODO: Possibly optimization required.
+                // Try use ArraySegment here.
                 ulong[] slice = new ulong[128];
 
                 Array.Copy(_memory, 128*index, slice, 0, 128);
