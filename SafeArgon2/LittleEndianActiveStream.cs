@@ -76,9 +76,11 @@ namespace SafeArgon2
         public override int Read(byte[] buffer, int offset, int count)
         {
             int totalRead = 0;
+
             while (totalRead < count)
             {
                 int available = _bufferAvailable - _bufferOffset;
+
                 if (available == 0)
                 {
                     if (_bufferSetupActions.Count == 0)
@@ -88,6 +90,7 @@ namespace SafeArgon2
                     }
 
                     _bufferSetupActions.First.Value();
+
                     _bufferSetupActions.RemoveFirst();
 
                     // we are safe to assume that offset becomes 0 after that call
@@ -96,10 +99,13 @@ namespace SafeArgon2
 
                 // if we only need to read part of available - reduce that
                 available = Math.Min(available, count - totalRead);
+
                 Array.Copy(_buffer, _bufferOffset, buffer, offset, available);
 
                 _bufferOffset += available;
+
                 offset += available;
+
                 totalRead += available;
             }
 
@@ -124,7 +130,9 @@ namespace SafeArgon2
         private void BufferSubStream(Stream stream)
         {
             ReserveBuffer(1024);
+
             var result = stream.Read(_buffer, 0, 1024);
+
             if (result == 1024)
             {
                 _bufferSetupActions.AddFirst(() => BufferSubStream(stream));
@@ -140,12 +148,14 @@ namespace SafeArgon2
         private void BufferByte(byte value)
         {
             ReserveBuffer(1);
+
             _buffer[0] = value;
         }
 
         private void BufferArray(byte[] value, int offset, int length)
         {
             ReserveBuffer(value.Length);
+
             Array.Copy(value, offset, _buffer, 0, length);
         }
 
@@ -162,6 +172,7 @@ namespace SafeArgon2
         private void BufferShort(ushort value)
         {
             ReserveBuffer(sizeof(ushort));
+
             _buffer[0] = (byte)value;
             _buffer[1] = (byte)(value >> 8);
         }
@@ -169,6 +180,7 @@ namespace SafeArgon2
         private void BufferInt(uint value)
         {
             ReserveBuffer(sizeof(uint));
+
             _buffer[0] = (byte)value;
             _buffer[1] = (byte)(value >> 8);
             _buffer[2] = (byte)(value >> 16);
@@ -187,13 +199,16 @@ namespace SafeArgon2
             }
 
             _bufferOffset = 0;
+
             _bufferAvailable = size;
         }
 
         private LinkedList<Action> _bufferSetupActions;
 
         private byte[] _buffer;
+
         private int _bufferOffset;
+
         private int _bufferAvailable;
 
         public override bool CanRead

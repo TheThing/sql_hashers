@@ -72,16 +72,16 @@ namespace LibTest
                 0x49, 0x3d, 0x2c, 0x35, 0x80, 0x0d, 0xa9, 0x76, 0x4c, 0xd8, 0xcb, 0x1b, 0x4e, 0xba, 0x7e, 0xb0
             };
 
-            var subject = new Argon2id(_password);
+            Argon2id hashAlgo = new Argon2id(_password);
 
-            subject.AssociatedData = _ad;
-            subject.DegreeOfParallelism = 16;
-            subject.Iterations = 15;
-            subject.KnownSecret = _secret;
-            subject.MemorySize = 4096;
-            subject.Salt = _salt;
+            hashAlgo.AssociatedData = _ad;
+            hashAlgo.DegreeOfParallelism = 16;
+            hashAlgo.Iterations = 15;
+            hashAlgo.KnownSecret = _secret;
+            hashAlgo.MemorySize = 4096;
+            hashAlgo.Salt = _salt;
 
-            var actual = subject.GetBytes(512);
+            var actual = hashAlgo.GetBytes(512);
 
             if (!AreEqual(expected, actual))
             {
