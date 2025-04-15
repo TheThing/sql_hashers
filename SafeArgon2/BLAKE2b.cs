@@ -2,13 +2,9 @@
 
 namespace SafeArgon2
 {
-    public class HMACBlake2B
+    public class BLAKE2b
     {
-        /// <summary>
-        /// Construct an HMACBlake2B without a key.
-        /// </summary>
-        /// <param name="hashSize">the hash size in bits</param>
-        public HMACBlake2B(int hashSize)
+        public BLAKE2b(int hashSize)
         {
             if ((hashSize % 8) > 0)
             {
@@ -27,12 +23,7 @@ namespace SafeArgon2
             Key = Array.Empty<byte>();
         }
 
-        /// <summary>
-        /// Construct an HMACBlake2B
-        /// </summary>
-        /// <param name="keyData">The key for the HMAC</param>
-        /// <param name="hashSize">The hash size in bits</param>
-        public HMACBlake2B(byte[] keyData, int hashSize) : this(hashSize)
+        public BLAKE2b(byte[] keyData, int hashSize) : this(hashSize)
         {
             if (keyData == null)
             {
@@ -47,15 +38,11 @@ namespace SafeArgon2
             Key = keyData;
         }
 
-        internal HMACBlake2B(byte[] keyData, int hashSize, Func<BLAKE2bBase> baseCreator) : this(keyData, hashSize)
+        internal BLAKE2b(byte[] keyData, int hashSize, Func<BLAKE2bBase> baseCreator) : this(keyData, hashSize)
         {
             _createImpl = baseCreator;
         }
 
-        /// <summary>
-        /// Implementation of HashSize <seealso cref="System.Security.Cryptography.HashAlgorithm"/>
-        /// </summary>
-        /// <returns>The hash</returns>
         public int HashSize
         {
             get
@@ -66,9 +53,15 @@ namespace SafeArgon2
 
         public byte[] Key { get; set; }
 
-        /// <summary>
-        /// Implementation of Initialize - initializes the HMAC buffer
-        /// </summary>
+        public byte[] ComputeHash(byte[] data)
+        {
+            Initialize();
+
+            HashCore(data, 0, data.Length);
+            
+            return HashFinal();
+        }
+
         public void Initialize()
         {
             _implementation = _createImpl();
@@ -76,12 +69,6 @@ namespace SafeArgon2
             _implementation.Initialize(Key);
         }
 
-        /// <summary>
-        /// Implementation of HashCore
-        /// </summary>
-        /// <param name="data">The data to hash</param>
-        /// <param name="offset">The offset to start hashing from</param>
-        /// <param name="size">The amount of data in the hash to consume</param>
         protected void HashCore(byte[] data, int offset, int size)
         {
             if (_implementation == null)
@@ -92,10 +79,6 @@ namespace SafeArgon2
             _implementation.Update(data, offset, size);
         }
 
-        /// <summary>
-        /// Finish hashing and return the final hash
-        /// </summary>
-        /// <returns>The final hash from HashCore</returns>
         protected byte[] HashFinal()
         {
             return _implementation.Final();
@@ -103,11 +86,6 @@ namespace SafeArgon2
 
         private BLAKE2bBase CreateImplementation()
         {
-            /*if (Vector.IsHardwareAccelerated)
-            {
-                return new Blake2bSimd(_hashSize / 8);
-            }*/
-
             return new BLAKE2bNormal(_hashSize / 8);
         }
 
