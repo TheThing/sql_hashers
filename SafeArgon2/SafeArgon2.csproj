@@ -41,7 +41,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Argon2.cs" />
+    <Compile Include="Argon2dCore.cs" />
     <Compile Include="Argon2iCore.cs" />
+    <Compile Include="Argon2id.cs" />
+    <Compile Include="Argon2idCore.cs" />
     <Compile Include="Argon2Lane.cs" />
     <Compile Include="ArrayExtensions.cs" />
     <Compile Include="BLAKE2bBase.cs" />
