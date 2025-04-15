@@ -164,7 +164,7 @@ namespace SafeArgon2
         {
             int byteLength = value.Length * sizeof(ulong);
 
-            ReserveBuffer(value.Length);
+            ReserveBuffer(byteLength);
 
             Buffer.BlockCopy(value, 0, _buffer, 0, byteLength);
         }
