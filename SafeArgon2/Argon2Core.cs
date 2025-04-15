@@ -156,19 +156,19 @@ namespace SafeArgon2
 
             for (var n = 0; n < 128; ++n)
             {
-                tmpblock[n] = refb.Array[dest.Offset + n] ^ prev.Array[prev.Offset + n];
+                tmpblock[n] = refb.Array[refb.Offset + n] ^ prev.Array[prev.Offset + n];
 
                 dest.Array[dest.Offset + n] ^= tmpblock[n];
             }
 
             for (var i = 0; i < 8; ++i)
             {
-                ModifiedBLAKE2.DoRoundColumns(tmpblock, i);
+                ModifiedBLAKE2.DoRoundColumns(new ArraySegment<ulong>(tmpblock), i);
             }
 
             for (var i = 0; i < 8; ++i)
             {
-                ModifiedBLAKE2.DoRoundRows(tmpblock, i);
+                ModifiedBLAKE2.DoRoundRows(new ArraySegment<ulong>(tmpblock), i);
             }
 
             for (var n = 0; n < 128; ++n)

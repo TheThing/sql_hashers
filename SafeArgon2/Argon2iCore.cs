@@ -61,6 +61,8 @@ namespace SafeArgon2
 
                     Compress(tmpBlock, inputBlock, new ArraySegment<ulong>(_zeroBlock, 0, 128));
                     Compress(addressBlock, tmpBlock, new ArraySegment<ulong>(_zeroBlock, 0, 128));
+
+                    // Note: Keep in mind that to view memory values of a segment you should use offset.
                 }
 
                 rands[i] = addressBlock.Array[addressBlock.Offset + ival];
