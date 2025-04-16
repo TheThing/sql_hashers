@@ -93,37 +93,13 @@ namespace SafeArgon2
 
         public abstract void Compress(bool isFinal);
 
-        protected ulong[] Hash
-        {
-            get
-            {
-                return _h;
-            }
-        }
+        protected ulong[] Hash => _h;
 
-        protected ulong TotalSegmentsLow
-        {
-            get
-            {
-                return _t[0];
-            }
-        }
+        protected ulong TotalSegmentsLow => _t[0];
 
-        protected ulong TotalSegmentsHigh
-        {
-            get
-            {
-                return _t[1];
-            }
-        }
+        protected ulong TotalSegmentsHigh => _t[1];
 
-        protected byte[] DataBuffer
-        {
-            get
-            {
-                return _b;
-            }
-        }
+        protected byte[] DataBuffer => _b;
 
         private ulong[] _h = new ulong[8];
         private ulong[] _t = new ulong[2];

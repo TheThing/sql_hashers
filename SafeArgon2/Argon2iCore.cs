@@ -23,13 +23,7 @@ namespace SafeArgon2
 
         public Argon2iCore(int hashSize) : base(hashSize) {}
 
-        public override int Type
-        {
-            get
-            {
-                return 1;
-            }
-        }
+        public override int Type => 1;
 
         internal override IArgon2PseudoRands GenerateState(Argon2Lane[] lanes, int segmentLength, int pass, int lane, int slice)
         {

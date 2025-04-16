@@ -4,6 +4,10 @@ namespace SafeArgon2
 {
     public class Argon2Lane
     {
+        // TODO: Use a constant for 128 here.
+
+        private readonly ulong[] _memory;
+
         public Argon2Lane(int blockCount)
         {
             _memory = new ulong[128 * blockCount];
@@ -25,7 +29,5 @@ namespace SafeArgon2
         }
 
         public int BlockCount { get; }
-
-        private readonly ulong[] _memory;
     }
 }
