@@ -12,9 +12,16 @@ namespace LibTest
         {
             for (int i = 0; i < 10; i++)
             {
+                TestBlake2();
+
+                Console.WriteLine("\n");
+            }
+
+            for (int i = 0; i < 10; i++)
+            {
                 TestArgon2();
 
-                Console.WriteLine("***");
+                Console.WriteLine("\n");
             }
 
             Console.WriteLine("Press any key to close.");
@@ -117,24 +124,42 @@ namespace LibTest
 
             if (!AreEqual(expected, actual))
             {
-                Console.WriteLine("Something is wrong.");
+                Console.WriteLine("Results do not match. Something is wrong.");
             }
         }
 
         static void TestBlake2()
         {
-            BLAKE2b hashFunc = new BLAKE2b(512);
-
-            var data = hashFunc.ComputeHash(Encoding.UTF8.GetBytes("Hello"));
-
-            if (!AreEqual(new byte[] {
+            var expected = new byte[] {
                 0xef, 0x15, 0xea, 0xf9, 0x2d, 0x5e, 0x33, 0x53, 0x45, 0xa3, 0xe1, 0xd9, 0x77, 0xbc, 0x7d, 0x87,
                 0x97, 0xc3, 0xd2, 0x75, 0x71, 0x7c, 0xc1, 0xb1, 0x0a, 0xf7, 0x9c, 0x93, 0xcd, 0xa0, 0x1a, 0xeb,
                 0x2a, 0x0c, 0x59, 0xbc, 0x02, 0xe2, 0xbd, 0xf9, 0x38, 0x0f, 0xd1, 0xb5, 0x4e, 0xb9, 0xe1, 0x66,
-                0x90, 0x26, 0x93, 0x0c, 0xcc, 0x24, 0xbd, 0x49, 0x74, 0x8e, 0x65, 0xf9, 0xa6, 0xb2, 0xee, 0x68 },
-                data))
+                0x90, 0x26, 0x93, 0x0c, 0xcc, 0x24, 0xbd, 0x49, 0x74, 0x8e, 0x65, 0xf9, 0xa6, 0xb2, 0xee, 0x68 };
+
+            int numIterations = 10;
+#if DEBUG
+            Console.WriteLine("Testing \"Safe BLAKE2b\" in Debug mode, number of iterations: " + numIterations);
+#else
+            Console.WriteLine("Testing \"Safe BLAKE2b\" in Release mode, number of iterations: " + numIterations);
+#endif
+            byte[] result = null;
+
+            var sw = Stopwatch.StartNew();
+
+            for (int i = 0; i < numIterations; i++)
             {
-                Console.WriteLine("Something is wrong.");
+                BLAKE2b hashFunc = new BLAKE2b(512);
+
+                result = hashFunc.ComputeHash(Encoding.UTF8.GetBytes("Hello"));
+            }
+
+            sw.Stop();
+
+            Console.WriteLine("Blake2 hash function average execution time: " + sw.Elapsed.TotalMilliseconds / numIterations + " ms");
+
+            if (!AreEqual(expected, result))
+            {
+                Console.WriteLine("Results do not match. Something is wrong.");
             }
         }
 
