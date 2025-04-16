@@ -7,6 +7,12 @@ namespace SafeArgon2
     public static class PasswordHasher
     {
         [SqlFunction(IsDeterministic = true, IsPrecise = true)]
+        public static string HelloTest(string password)
+        {
+            return "Just a hello: " + password;
+        }
+
+        [SqlFunction(IsDeterministic = true, IsPrecise = true)]
         public static string HashPassword(string password)
         {
             var bytes = Encoding.UTF8.GetBytes(password);
