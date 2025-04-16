@@ -166,7 +166,8 @@ namespace SafeArgon2
 
             ReserveBuffer(byteLength);
 
-            Buffer.BlockCopy(mem.Array, mem.Offset, _buffer, 0, byteLength);
+            // Note that we work with bytes here, so array offset value should be converted to bytes.
+            Buffer.BlockCopy(mem.Array, mem.Offset * sizeof(ulong), _buffer, 0, byteLength);
         }
 
         private void BufferShort(ushort value)

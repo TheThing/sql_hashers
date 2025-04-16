@@ -122,9 +122,6 @@ namespace SafeArgon2
             
             var result = new byte[_tagLine];
             
-            //// TODO: Double check if new code is equivalent to original here.
-            
-            //var tmp = MemoryMarshal.Cast<ulong, byte>(lanes[0][1].Span).Slice(0, result.Length);
             ArraySegment<ulong> source = lanes[0][1];
 
             int byteCount = result.Length;
@@ -136,8 +133,8 @@ namespace SafeArgon2
             // Convert each ulong into 8 bytes (little-endian).
             for (int i = 0; i < maxUlongBytes; i++)
             {
-                int ulongIndex = i / 8;
-                int byteOffset = i % 8;
+                int ulongIndex = i / sizeof(ulong);
+                int byteOffset = i % sizeof(ulong);
 
                 // TODO: Check it under debug.
                 tmp[i] = (byte)(source.Array[source.Offset + ulongIndex] >> (8 * byteOffset));
