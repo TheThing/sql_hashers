@@ -159,6 +159,7 @@ namespace SafeArgon2
             Array.Copy(value, offset, _buffer, 0, length);
         }
 
+        // TODO: Rename to BufferArraySegment.
         private void BufferSpan(ArraySegment<ulong> mem)
         {
             int byteLength = mem.Count * sizeof(ulong);
