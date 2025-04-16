@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using SafeArgon2;
@@ -9,7 +10,12 @@ namespace LibTest
     {
         static void Main(string[] args)
         {
-            TestArgon2();
+            for (int i = 0; i < 10; i++)
+            {
+                TestArgon2();
+
+                Console.WriteLine("***");
+            }
 
             Console.WriteLine("Press any key to close.");
 
@@ -81,15 +87,6 @@ namespace LibTest
                 0x49, 0x3d, 0x2c, 0x35, 0x80, 0x0d, 0xa9, 0x76, 0x4c, 0xd8, 0xcb, 0x1b, 0x4e, 0xba, 0x7e, 0xb0
             };
 
-            Argon2id hashAlgo = new Argon2id(_password);
-
-            hashAlgo.AssociatedData = _ad;
-            hashAlgo.DegreeOfParallelism = 16;
-            hashAlgo.Iterations = 15;
-            hashAlgo.KnownSecret = _secret;
-            hashAlgo.MemorySize = 4096;
-            hashAlgo.Salt = _salt;
-
             int numIterations = 10;
 #if DEBUG
             Console.WriteLine("Testing \"Safe Argon2id\" in Debug mode, number of iterations: " + numIterations);
@@ -98,16 +95,25 @@ namespace LibTest
 #endif
             byte[] actual = null;
 
-            var startTime = DateTime.Now;
+            var sw = Stopwatch.StartNew();
 
             for (int i = 0; i < numIterations; i++)
             {
+                Argon2id hashAlgo = new Argon2id(_password);
+
+                hashAlgo.AssociatedData = _ad;
+                hashAlgo.DegreeOfParallelism = 16;
+                hashAlgo.Iterations = 15;
+                hashAlgo.KnownSecret = _secret;
+                hashAlgo.MemorySize = 4096;
+                hashAlgo.Salt = _salt;
+
                 actual = hashAlgo.GetBytes(512);
             }
 
-            var timeDeltaMS = (DateTime.Now - startTime).TotalMilliseconds;
+            sw.Stop();
 
-            Console.WriteLine("Argon2id algo average execution time: " + timeDeltaMS / numIterations + " ms");
+            Console.WriteLine("Argon2id algo average execution time: " + sw.Elapsed.TotalMilliseconds / numIterations + " ms");
 
             if (!AreEqual(expected, actual))
             {
