@@ -54,6 +54,7 @@ namespace SafeArgon2
                         for (var c = start; c < segmentLength; ++c, curOffset++)
                         {
                             var pseudoRand = state.PseudoRand(c, prevLane, prevOffset);
+
                             var refLane = (uint)(pseudoRand >> 32) % lanes.Length;
 
                             if (i == 0 && s == 0)
@@ -188,7 +189,9 @@ namespace SafeArgon2
             // adjust memory size if needed so that each segment has
             // an even size
             var segmentLength = MemorySize / (lanes.Length * 4);
+
             MemorySize = segmentLength * 4 * lanes.Length;
+
             var blocksPerLane = MemorySize / lanes.Length;
 
             if (blocksPerLane < 4)
@@ -197,15 +200,19 @@ namespace SafeArgon2
             }
 
             Task[] init = new Task[lanes.Length * 2];
+
             for (var i = 0; i < lanes.Length; ++i)
             {
                 lanes[i] = new Argon2Lane(blocksPerLane);
 
                 int taskIndex = i * 2;
+
                 int iClosure = i;
+
                 init[taskIndex] = Task.Run(() =>
                 {
                     var stream = new LittleEndianActiveStream();
+
                     stream.Expose(blockHash);
                     stream.Expose(0);
                     stream.Expose(iClosure);
@@ -216,6 +223,7 @@ namespace SafeArgon2
                 init[taskIndex + 1] = Task.Run(() =>
                 {
                     var stream = new LittleEndianActiveStream();
+
                     stream.Expose(blockHash);
                     stream.Expose(1);
                     stream.Expose(iClosure);

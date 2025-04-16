@@ -121,6 +121,8 @@ namespace SafeArgon2
 
                 blake2.Initialize();
 
+                chunk = blake2.ComputeHash(chunk);
+
                 slice = new ArraySegment<byte>(chunk, 0, size);
 
                 memory.Blit(slice, offset); // copy the rest

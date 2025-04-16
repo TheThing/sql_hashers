@@ -17,8 +17,9 @@ namespace SafeArgon2
                 throw new ArgumentNullException(nameof(toBlit));
             }
 
-            int fullUlongs = bytes.Count / 8;
-            int remainder = bytes.Count % 8;
+            int fullUlongs = bytes.Count / sizeof(ulong);
+
+            int remainder = bytes.Count % sizeof(ulong);
 
             if (fullUlongs > toBlit.Count - destOffset)
             {
