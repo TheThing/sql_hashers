@@ -56,6 +56,7 @@
     <Compile Include="IArgon2PseudoRands.cs" />
     <Compile Include="LittleEndianActiveStream.cs" />
     <Compile Include="ModifiedBLAKE2.cs" />
+    <Compile Include="PasswordHasher.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
