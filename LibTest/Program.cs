@@ -10,6 +10,10 @@ namespace LibTest
         static void Main(string[] args)
         {
             TestArgon2();
+
+            Console.WriteLine("Press any key to close.");
+
+            Console.ReadKey();
         }
 
         static void TestArgon2()
@@ -86,7 +90,24 @@ namespace LibTest
             hashAlgo.MemorySize = 4096;
             hashAlgo.Salt = _salt;
 
-            var actual = hashAlgo.GetBytes(512);
+            int numIterations = 10;
+#if DEBUG
+            Console.WriteLine("Testing \"Safe Argon2id\" in Debug mode, number of iterations: " + numIterations);
+#else
+            Console.WriteLine("Testing \"Safe Argon2id\" in Release mode, number of iterations: " + numIterations);
+#endif
+            byte[] actual = null;
+
+            var startTime = DateTime.Now;
+
+            for (int i = 0; i < numIterations; i++)
+            {
+                actual = hashAlgo.GetBytes(512);
+            }
+
+            var timeDeltaMS = (DateTime.Now - startTime).TotalMilliseconds;
+
+            Console.WriteLine("Argon2id algo average execution time: " + timeDeltaMS / numIterations + " ms");
 
             if (!AreEqual(expected, actual))
             {
