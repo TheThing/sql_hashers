@@ -53,7 +53,7 @@ namespace SafeArgon2
 
             var hash = algo.GetBytes(hashLength);
 
-            return BitConverter.ToString(hash).Replace("-","");
+            return BitConverter.ToString(hash).Replace("-","").ToLower();
         }
     }
 }
