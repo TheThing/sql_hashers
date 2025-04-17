@@ -21,16 +21,14 @@ namespace SafeArgon2
         {
             ValidateParameters(bc);
 
-            var task = Task.Run(async () => await GetBytesAsyncImpl(bc).ConfigureAwait(false) );
-            
-            return task.Result;
+            return GetBytesImpl(bc);
         }
 
-        public Task<byte[]> GetBytesAsync(int bc)
+        public byte[] GetBytesAsync(int bc)
         {
             ValidateParameters(bc);
 
-            return GetBytesAsyncImpl(bc);
+            return GetBytes(bc);
         }
 
         public byte[] Salt { get; set; }
@@ -70,7 +68,7 @@ namespace SafeArgon2
             }
         }
 
-        private Task<byte[]> GetBytesAsyncImpl(int bc)
+        private byte[] GetBytesImpl(int bc)
         {
             var n = BuildCore(bc);
 

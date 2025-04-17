@@ -25,17 +25,17 @@ namespace SafeArgon2
 
         public byte[] Secret { get; set; }
 
-        internal async Task<byte[]> Hash(byte[] password)
+        internal byte[] Hash(byte[] password)
         {
-            var lanes = await InitializeLanes(password).ConfigureAwait(false);
+            var lanes = InitializeLanes(password);
 
             var start = 2;
 
-            for (var i = 0; i < Iterations; ++i)
+            for (int i = 0; i < Iterations; ++i)
             {
-                for (var s = 0; s < 4; s++)
+                for (int s = 0; s < 4; s++)
                 {
-                    var segment = Enumerable.Range(0, lanes.Length).Select(l => Task.Run(() =>
+                    for (int l = 0; l < lanes.Length; l++)
                     {
                         var lane = lanes[l];
                         var segmentLength = lane.BlockCount / 4;
@@ -71,9 +71,7 @@ namespace SafeArgon2
 
                             prevOffset = curOffset;
                         }
-                    }));
-
-                    await Task.WhenAll(segment).ConfigureAwait(false);
+                    }
 
                     start = 0;
                 }
@@ -177,14 +175,13 @@ namespace SafeArgon2
 
         internal abstract IArgon2PseudoRands GenerateState(Argon2Lane[] lanes, int segmentLength, int pass, int lane, int slice);
 
-        internal async Task<Argon2Lane[]> InitializeLanes(byte[] password)
+        internal Argon2Lane[] InitializeLanes(byte[] password)
         {
             var blockHash = Initialize(password);
 
             var lanes = new Argon2Lane[DegreeOfParallelism];
 
-            // adjust memory size if needed so that each segment has
-            // an even size
+            // Adjust memory size if needed so that each segment has an even size.
             var segmentLength = MemorySize / (lanes.Length * 4);
 
             MemorySize = segmentLength * 4 * lanes.Length;
@@ -196,49 +193,55 @@ namespace SafeArgon2
                 throw new InvalidOperationException($"Memory should be enough to provide at least 4 blocks per {nameof(DegreeOfParallelism)}");
             }
 
-            Task[] init = new Task[lanes.Length * 2];
+            //Task[] init = new Task[lanes.Length * 2];
 
             for (var i = 0; i < lanes.Length; ++i)
             {
                 lanes[i] = new Argon2Lane(blocksPerLane);
 
-                int taskIndex = i * 2;
+                //int taskIndex = i * 2;
 
                 int iClosure = i;
 
-                init[taskIndex] = Task.Run(() =>
+                var stream = new LittleEndianActiveStream();
+
+                stream.Expose(blockHash);
+                stream.Expose(0);
+                stream.Expose(iClosure);
+
+                ModifiedBLAKE2.Blake2Prime(lanes[iClosure][0], stream);
+
+                stream = new LittleEndianActiveStream();
+
+                stream.Expose(blockHash);
+                stream.Expose(1);
+                stream.Expose(iClosure);
+
+                ModifiedBLAKE2.Blake2Prime(lanes[iClosure][1], stream);
+
+                /*init[taskIndex] = Task.Run(() =>
                 {
-                    var stream = new LittleEndianActiveStream();
+                    
+                });*/
 
-                    stream.Expose(blockHash);
-                    stream.Expose(0);
-                    stream.Expose(iClosure);
-
-                    ModifiedBLAKE2.Blake2Prime(lanes[iClosure][0], stream);
-                });
-
-                init[taskIndex + 1] = Task.Run(() =>
+                /*init[taskIndex + 1] = Task.Run(() =>
                 {
-                    var stream = new LittleEndianActiveStream();
-
-                    stream.Expose(blockHash);
-                    stream.Expose(1);
-                    stream.Expose(iClosure);
-
-                    ModifiedBLAKE2.Blake2Prime(lanes[iClosure][1], stream);
-                });
+                    
+                });*/
             }
 
-            await Task.WhenAll(init).ConfigureAwait(false);
+            //await Task.WhenAll(init).ConfigureAwait(false);
 
             Array.Clear(blockHash, 0, blockHash.Length);
+
             return lanes;
         }
 
         internal byte[] Initialize(byte[] password)
         {
-            // initialize the lanes
+            // Initialize the lanes.
             var blake2 = new BLAKE2b(512);
+
             var dataStream = new LittleEndianActiveStream();
 
             dataStream.Expose(DegreeOfParallelism);
@@ -257,9 +260,11 @@ namespace SafeArgon2
             dataStream.Expose(AssociatedData);
 
             blake2.Initialize();
+
             var blockhash = blake2.ComputeHash(dataStream);
 
             dataStream.ClearBuffer();
+
             return blockhash;
         }
 
