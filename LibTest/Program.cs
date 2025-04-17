@@ -10,19 +10,21 @@ namespace LibTest
     {
         static void Main(string[] args)
         {
-            for (int i = 0; i < 10; i++)
+            /*for (int i = 0; i < 10; i++)
             {
                 TestBlake2();
 
                 Console.WriteLine("\n");
-            }
+            }*/
 
-            for (int i = 0; i < 10; i++)
+            /*for (int i = 0; i < 10; i++)
             {
                 TestArgon2();
 
                 Console.WriteLine("\n");
-            }
+            }*/
+
+            TestArgon2();
 
             Console.WriteLine("Press any key to close.");
 

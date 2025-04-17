@@ -24,13 +24,6 @@ namespace SafeArgon2
             return GetBytesImpl(bc);
         }
 
-        public byte[] GetBytesAsync(int bc)
-        {
-            ValidateParameters(bc);
-
-            return GetBytes(bc);
-        }
-
         public byte[] Salt { get; set; }
 
         public byte[] KnownSecret { get; set; }
