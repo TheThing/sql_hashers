@@ -90,3 +90,24 @@ SELECT dbo.Argon2idHash(
     32
 );
 ```
+
+---
+
+## ⚠️ Security Warning
+
+This implementation of **Argon2id** is **single-threaded by design** to comply with Microsoft SQL Server on Linux `SAFE` assembly restrictions.
+
+### ❗ Important Limitations:
+
+- ❌ Does **not** use parallelism (multi-threading) — a core feature of the original Argon2id
+- ❌ May be **less resistant** to GPU/ASIC attacks
+- ❌ Does **not fully comply** with the Argon2id specification ([RFC 9106](https://datatracker.ietf.org/doc/html/rfc9106))
+- ❌ Not recommended for use in high-security environments or systems exposed to untrusted users without additional safeguards
+
+### ✅ Still safe for:
+
+- Internal SQL Server use under controlled environments
+- Use cases where standard Argon2id implementations are not permitted (e.g., due to SAFE CLR restrictions)
+- Scenarios where **usability inside SQL Server outweighs optimal attack resistance**
+
+> 🛡️ For maximum security, prefer a standard, multi-threaded Argon2id implementation when platform restrictions allow it.
