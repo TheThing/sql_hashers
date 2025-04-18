@@ -141,30 +141,41 @@ namespace SafeArgon2
             return result;
         }
 
+        // Static buffer used exclusively by the Compress method.
+        // Improves performance by avoiding unnecessary memory allocations on each call.
+        // This is safe because:
+        // - The method is single-threaded.
+        // - dest.Count is always 128 as per the current algorithm's design.
+        // - _tmpblock is fully overwritten at the start of each Compress() call.
+        private static readonly ulong[] _tmpblock = new ulong[128];
+
         internal static void Compress(ArraySegment<ulong> dest, ArraySegment<ulong> refb, ArraySegment<ulong> prev)
         {
-            var tmpblock = new ulong[dest.Count];
-
-            for (var n = 0; n < 128; ++n)
+            if (dest.Count != 128)
             {
-                tmpblock[n] = refb.Array[refb.Offset + n] ^ prev.Array[prev.Offset + n];
-
-                dest.Array[dest.Offset + n] ^= tmpblock[n];
-            }
-
-            for (var i = 0; i < 8; ++i)
-            {
-                ModifiedBLAKE2.DoRoundColumns(tmpblock, i);
-            }
-
-            for (var i = 0; i < 8; ++i)
-            {
-                ModifiedBLAKE2.DoRoundRows(tmpblock, i);
+                throw new ArgumentException("Unexpected value: dest.Count must be 128.");
             }
 
             for (var n = 0; n < 128; ++n)
             {
-                dest.Array[dest.Offset + n] ^= tmpblock[n];
+                _tmpblock[n] = refb.Array[refb.Offset + n] ^ prev.Array[prev.Offset + n];
+
+                dest.Array[dest.Offset + n] ^= _tmpblock[n];
+            }
+
+            for (var i = 0; i < 8; ++i)
+            {
+                ModifiedBLAKE2.DoRoundColumns(_tmpblock, i);
+            }
+
+            for (var i = 0; i < 8; ++i)
+            {
+                ModifiedBLAKE2.DoRoundRows(_tmpblock, i);
+            }
+
+            for (var n = 0; n < 128; ++n)
+            {
+                dest.Array[dest.Offset + n] ^= _tmpblock[n];
             }
         }
 
