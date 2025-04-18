@@ -9,38 +9,34 @@ namespace SafeArgon2
             return (((x) >> (y)) ^ ((x) << (64 - (y))));
         }
 
-        private static void ModifiedG(ArraySegment<ulong> v, int a, int b, int c, int d)
+        private static void ModifiedG(ulong[] v, int a, int b, int c, int d)
         {
-            var arr = v.Array;
+            var t = (v[a] & 0xffffffff) * (v[b] & 0xffffffff);
 
-            var offset = v.Offset;
+            v[a] = v[a] + v[b] + 2 * t;
 
-            var t = (arr[offset + a] & 0xffffffff) * (arr[offset + b] & 0xffffffff);
+            v[d] = Rotate(v[d] ^ v[a], 32);
 
-            arr[offset + a] = arr[offset + a] + arr[offset + b] + 2 * t;
+            t = (v[c] & 0xffffffff) * (v[d] & 0xffffffff);
 
-            arr[offset + d] = Rotate(arr[offset + d] ^ arr[offset + a], 32);
+            v[c] = v[c] + v[d] + 2 * t;
 
-            t = (arr[offset + c] & 0xffffffff) * (arr[offset + d] & 0xffffffff);
+            v[b] = Rotate(v[b] ^ v[c], 24);
 
-            arr[offset + c] = arr[offset + c] + arr[offset + d] + 2 * t;
+            t = (v[a] & 0xffffffff) * (v[b] & 0xffffffff);
 
-            arr[offset + b] = Rotate(arr[offset + b] ^ arr[offset + c], 24);
+            v[a] = v[a] + v[b] + 2 * t;
 
-            t = (arr[offset + a] & 0xffffffff) * (arr[offset + b] & 0xffffffff);
+            v[d] = Rotate(v[d] ^ v[a], 16);
 
-            arr[offset + a] = arr[offset + a] + arr[offset + b] + 2 * t;
+            t = (v[c] & 0xffffffff) * (v[d] & 0xffffffff);
 
-            arr[offset + d] = Rotate(arr[offset + d] ^ arr[offset + a], 16);
+            v[c] = v[c] + v[d] + 2 * t;
 
-            t = (arr[offset + c] & 0xffffffff) * (arr[offset + d] & 0xffffffff);
-
-            arr[offset + c] = arr[offset + c] + arr[offset + d] + 2 * t;
-
-            arr[offset + b] = Rotate(arr[offset + b] ^ arr[offset + c], 63);
+            v[b] = Rotate(v[b] ^ v[c], 63);
         }
 
-        public static void DoRoundColumns(ArraySegment<ulong> v, int i)
+        public static void DoRoundColumns(ulong[] v, int i)
         {
             i *= 16;
 
@@ -54,7 +50,7 @@ namespace SafeArgon2
             ModifiedG(v, i + 3, i + 4,  i + 9, i + 14);
         }
 
-        public static void DoRoundRows(ArraySegment<ulong> v, int i)
+        public static void DoRoundRows(ulong[] v, int i)
         {
             i *= 2;
 

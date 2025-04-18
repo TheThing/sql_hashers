@@ -143,7 +143,6 @@ namespace SafeArgon2
 
         internal static void Compress(ArraySegment<ulong> dest, ArraySegment<ulong> refb, ArraySegment<ulong> prev)
         {
-            // TODO: Think if it's possible to improve performance here.
             var tmpblock = new ulong[dest.Count];
 
             for (var n = 0; n < 128; ++n)
@@ -155,12 +154,12 @@ namespace SafeArgon2
 
             for (var i = 0; i < 8; ++i)
             {
-                ModifiedBLAKE2.DoRoundColumns(new ArraySegment<ulong>(tmpblock), i);
+                ModifiedBLAKE2.DoRoundColumns(tmpblock, i);
             }
 
             for (var i = 0; i < 8; ++i)
             {
-                ModifiedBLAKE2.DoRoundRows(new ArraySegment<ulong>(tmpblock), i);
+                ModifiedBLAKE2.DoRoundRows(tmpblock, i);
             }
 
             for (var n = 0; n < 128; ++n)
