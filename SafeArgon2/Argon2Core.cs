@@ -121,35 +121,27 @@ namespace SafeArgon2
             ModifiedBLAKE2.Blake2Prime(lanes[0][1], ds, _tagLine);
             
             var result = new byte[_tagLine];
-            
+
             ArraySegment<ulong> source = lanes[0][1];
 
-            int byteCount = result.Length;
+            int maxUlongBytes = Math.Min(result.Length, source.Count * 8);
 
-            byte[] tmp = new byte[byteCount];
-
-            int maxUlongBytes = Math.Min(byteCount, source.Count * 8);
-
-            // TODO: Compare with original implementation. Ensure correctness.
             // Convert each ulong into 8 bytes (little-endian).
             for (int i = 0; i < maxUlongBytes; i++)
             {
                 int ulongIndex = i / sizeof(ulong);
                 int byteOffset = i % sizeof(ulong);
 
-                // TODO: Check it under debug.
-                tmp[i] = (byte)(source.Array[source.Offset + ulongIndex] >> (8 * byteOffset));
+                // Calculate shift value in bits: byteOffset * 8
+                result[i] = (byte)(source.Array[source.Offset + ulongIndex] >> (byteOffset * 8));
             }
 
-            // TODO: Check if copying is correct here.
-            tmp.CopyTo(result, 0);
-            
             return result;
         }
 
         internal static void Compress(ArraySegment<ulong> dest, ArraySegment<ulong> refb, ArraySegment<ulong> prev)
         {
-            // TODO: Think about performance here.
+            // TODO: Think if it's possible to improve performance here.
             var tmpblock = new ulong[dest.Count];
 
             for (var n = 0; n < 128; ++n)
