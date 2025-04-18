@@ -2,7 +2,7 @@
 
 namespace SafeArgon2
 {
-    public class Argon2Lane
+    internal class Argon2Lane
     {
         // TODO: Use a constant for 128 here.
 

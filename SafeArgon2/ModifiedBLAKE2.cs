@@ -43,6 +43,7 @@ namespace SafeArgon2
         public static void DoRoundColumns(ArraySegment<ulong> v, int i)
         {
             i *= 16;
+
             ModifiedG(v,     i, i + 4,  i + 8, i + 12);
             ModifiedG(v, i + 1, i + 5,  i + 9, i + 13);
             ModifiedG(v, i + 2, i + 6, i + 10, i + 14);
@@ -56,6 +57,7 @@ namespace SafeArgon2
         public static void DoRoundRows(ArraySegment<ulong> v, int i)
         {
             i *= 2;
+
             ModifiedG(v,      i, i + 32, i + 64, i +  96);
             ModifiedG(v, i +  1, i + 33, i + 65, i +  97);
             ModifiedG(v, i + 16, i + 48, i + 80, i + 112);
@@ -66,7 +68,7 @@ namespace SafeArgon2
             ModifiedG(v, i + 17, i + 32, i + 65, i + 112);
         }
 
-        public static void Blake2Prime(ArraySegment<ulong> memory, LittleEndianActiveStream dataStream, int size = -1)
+        internal static void Blake2Prime(ArraySegment<ulong> memory, LittleEndianActiveStream dataStream, int size = -1)
         {
             var hashStream = new LittleEndianActiveStream();
 
@@ -96,11 +98,13 @@ namespace SafeArgon2
 
                 var chunk = blake2.ComputeHash(hashStream);
 
+                // Copy half of the chunk.
                 var slice = new ArraySegment<byte>(chunk, 0, 32);
 
-                memory.Blit(slice, offset); // copy half of the chunk
+                memory.Blit(slice, offset);
 
                 offset += 4;
+
                 size -= 32;
 
                 while (size > 64)
@@ -109,11 +113,13 @@ namespace SafeArgon2
 
                     chunk = blake2.ComputeHash(chunk);
 
+                    // Half it again.
                     slice = new ArraySegment<byte>(chunk, 0, 32);
 
-                    memory.Blit(slice, offset); // half again
+                    memory.Blit(slice, offset);
 
                     offset += 4;
+
                     size -= 32;
                 }
 
@@ -123,9 +129,10 @@ namespace SafeArgon2
 
                 chunk = blake2.ComputeHash(chunk);
 
+                // Copy the rest.
                 slice = new ArraySegment<byte>(chunk, 0, size);
 
-                memory.Blit(slice, offset); // copy the rest
+                memory.Blit(slice, offset);
             }
         }
     }

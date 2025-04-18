@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading.Tasks;
 
 namespace SafeArgon2
 {
@@ -11,7 +10,7 @@ namespace SafeArgon2
         {
             if (password == null || password.Length == 0)
             {
-                throw new ArgumentException("Argon2 needs a password set", nameof(password));
+                throw new ArgumentException("Argon2 needs a password set.", nameof(password));
             }
 
             _password = password;
@@ -42,22 +41,22 @@ namespace SafeArgon2
         {
             if (bc > 1024)
             {
-                throw new NotSupportedException("Current implementation of Argon2 only supports generating up to 1024 bytes");
+                throw new NotSupportedException("Current implementation of Argon2 only supports generating up to 1024 bytes.");
             }
 
             if (Iterations < 1)
             {
-                throw new InvalidOperationException("Cannot perform an Argon2 Hash with out at least 1 iteration");
+                throw new InvalidOperationException("Cannot perform an Argon2 Hash with out at least 1 iteration.");
             }
 
             if (MemorySize < 4)
             {
-                throw new InvalidOperationException("Argon2 requires a minimum of 4kB of memory (MemorySize >= 4)");
+                throw new InvalidOperationException("Argon2 requires a minimum of 4kB of memory (MemorySize >= 4).");
             }
 
             if (DegreeOfParallelism < 1)
             {
-                throw new InvalidOperationException("Argon2 requires at least 1 thread (DegreeOfParallelism)");
+                throw new InvalidOperationException("Argon2 requires at least 1 thread (DegreeOfParallelism).");
             }
         }
 

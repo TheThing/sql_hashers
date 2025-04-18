@@ -1,8 +1,9 @@
 ﻿namespace SafeArgon2
 {
-    public class BLAKE2Constants
+    internal class BLAKE2Constants
     {
-        public static readonly ulong[] IV = {
+        internal static readonly ulong[] IV =
+        {
             0x6A09E667F3BCC908UL,
             0xBB67AE8584CAA73BUL,
             0x3C6EF372FE94F82BUL,
@@ -13,7 +14,8 @@
             0x5BE0CD19137E2179UL
         };
 
-        public static readonly int[][] Sigma = new int[][] {
+        internal static readonly int[][] Sigma = new int[][]
+        {
             new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 },
             new int[] { 14, 10, 4, 8, 9, 15, 13, 6, 1, 12, 0, 2, 11, 7, 5, 3 },
             new int[] { 11, 8, 12, 0, 5, 2, 15, 13, 10, 14, 3, 6, 7, 1, 9, 4 },

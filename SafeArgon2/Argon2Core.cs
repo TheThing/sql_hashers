@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace SafeArgon2
 {
-    public abstract class Argon2Core
+    internal abstract class Argon2Core
     {
         public Argon2Core(int hashSize)
         {
@@ -62,9 +61,10 @@ namespace SafeArgon2
                                 refLane = l;
                             }
 
-                            // TODO: Check changes here.
                             var refIndex = IndexAlpha(l == refLane, (uint)pseudoRand, lane.BlockCount, segmentLength, i, s, c);
+
                             var refBlock = lanes[refLane][refIndex];
+
                             var curBlock = lane[curOffset];
 
                             Compress(curBlock, refBlock, lanes[prevLane][prevOffset]);
@@ -82,18 +82,20 @@ namespace SafeArgon2
 
         private static void XorLanes(Argon2Lane[] lanes)
         {
-            // TODO: Check this implementation without Span.
             var data = lanes[0][lanes[0].BlockCount - 1];
 
-            foreach (var lane in lanes.Skip(1))
+            for (int i = 1; i < lanes.Length; i++)
             {
+                var lane = lanes[i];
+
                 var block = lane[lane.BlockCount - 1];
 
                 for (var b = 0; b < 128; ++b)
                 {
                     if (!BitConverter.IsLittleEndian)
                     {
-                        block.Array[block.Offset + b] = (block.Array[block.Offset + b] >> 56) ^
+                        block.Array[block.Offset + b] =
+                            (block.Array[block.Offset + b] >> 56) ^
                             ((block.Array[block.Offset + b] >> 40) & 0xff00UL) ^
                             ((block.Array[block.Offset + b] >> 24) & 0xff0000UL) ^
                             ((block.Array[block.Offset + b] >> 8) & 0xff000000UL) ^
@@ -128,6 +130,7 @@ namespace SafeArgon2
 
             int maxUlongBytes = Math.Min(byteCount, source.Count * 8);
 
+            // TODO: Compare with original implementation. Ensure correctness.
             // Convert each ulong into 8 bytes (little-endian).
             for (int i = 0; i < maxUlongBytes; i++)
             {
@@ -137,7 +140,6 @@ namespace SafeArgon2
                 // TODO: Check it under debug.
                 tmp[i] = (byte)(source.Array[source.Offset + ulongIndex] >> (8 * byteOffset));
             }
-            ////
 
             // TODO: Check if copying is correct here.
             tmp.CopyTo(result, 0);
@@ -175,6 +177,7 @@ namespace SafeArgon2
 
         internal abstract IArgon2PseudoRands GenerateState(Argon2Lane[] lanes, int segmentLength, int pass, int lane, int slice);
 
+        // Single-threaded implementation on purpose.
         internal Argon2Lane[] InitializeLanes(byte[] password)
         {
             var blockHash = Initialize(password);
@@ -190,16 +193,12 @@ namespace SafeArgon2
 
             if (blocksPerLane < 4)
             {
-                throw new InvalidOperationException($"Memory should be enough to provide at least 4 blocks per {nameof(DegreeOfParallelism)}");
+                throw new InvalidOperationException($"Memory should be enough to provide at least 4 blocks per {nameof(DegreeOfParallelism)}.");
             }
-
-            //Task[] init = new Task[lanes.Length * 2];
 
             for (var i = 0; i < lanes.Length; ++i)
             {
                 lanes[i] = new Argon2Lane(blocksPerLane);
-
-                //int taskIndex = i * 2;
 
                 int iClosure = i;
 
@@ -218,19 +217,7 @@ namespace SafeArgon2
                 stream.Expose(iClosure);
 
                 ModifiedBLAKE2.Blake2Prime(lanes[iClosure][1], stream);
-
-                /*init[taskIndex] = Task.Run(() =>
-                {
-                    
-                });*/
-
-                /*init[taskIndex + 1] = Task.Run(() =>
-                {
-                    
-                });*/
             }
-
-            //await Task.WhenAll(init).ConfigureAwait(false);
 
             Array.Clear(blockHash, 0, blockHash.Length);
 
@@ -261,7 +248,7 @@ namespace SafeArgon2
 
             blake2.Initialize();
 
-            var blockhash = blake2.ComputeHash(dataStream);
+            byte[] blockhash = blake2.ComputeHash(dataStream);
 
             dataStream.ClearBuffer();
 
@@ -271,27 +258,43 @@ namespace SafeArgon2
         private static int IndexAlpha(bool sameLane, uint pseudoRand, int laneLength, int segmentLength, int pass, int slice, int index)
         {
             uint refAreaSize;
+
             if (pass == 0)
             {
                 if (slice == 0)
+                {
                     refAreaSize = (uint)index - 1;
+                }
                 else if (sameLane)
+                {
                     refAreaSize = (uint)(slice * segmentLength) + (uint)index - 1;
+                }
                 else
+                {
                     refAreaSize = (uint)(slice * segmentLength) - ((index == 0) ? 1U : 0);
+                }
             }
             else if (sameLane)
+            {
                 refAreaSize = (uint)laneLength - (uint)segmentLength + (uint)index - 1;
+            }
             else
+            {
                 refAreaSize = (uint)laneLength - (uint)segmentLength - ((index == 0) ? 1U : 0);
+            }
 
             ulong relativePos = pseudoRand;
+
             relativePos = relativePos * relativePos >> 32;
+
             relativePos = refAreaSize - 1 - (refAreaSize * relativePos >> 32);
 
             uint startPos = 0;
+
             if (pass != 0)
+            {
                 startPos = (slice == 3) ? 0 : ((uint)slice + 1U) * (uint)segmentLength;
+            }
 
             return (int)(((ulong)startPos + relativePos) % (ulong)laneLength);
         }

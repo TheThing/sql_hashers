@@ -1,6 +1,6 @@
 ﻿namespace SafeArgon2
 {
-    public class Argon2dCore : Argon2Core
+    internal class Argon2dCore : Argon2Core
     {
         internal class PseudoRands : IArgon2PseudoRands
         {

@@ -5,6 +5,16 @@ namespace SafeArgon2
 {
     public class BLAKE2b
     {
+        private BLAKE2bBase _implementation = null;
+
+        private readonly int _hashSize;
+
+        private readonly Func<BLAKE2bBase> _createImpl = null;
+
+        public int HashSize => _hashSize;
+
+        public byte[] Key { get; set; }
+
         public BLAKE2b(int hashSize)
         {
             if ((hashSize % 8) > 0)
@@ -43,16 +53,6 @@ namespace SafeArgon2
         {
             _createImpl = baseCreator;
         }
-
-        public int HashSize
-        {
-            get
-            {
-                return (int)_hashSize;
-            }
-        }
-
-        public byte[] Key { get; set; }
 
         public byte[] ComputeHash(byte[] data)
         {
@@ -106,11 +106,5 @@ namespace SafeArgon2
         {
             return new BLAKE2bNormal(_hashSize / 8);
         }
-
-        BLAKE2bBase _implementation;
-
-        private readonly int _hashSize;
-
-        private readonly Func<BLAKE2bBase> _createImpl;
     }
 }

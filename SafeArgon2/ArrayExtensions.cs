@@ -23,7 +23,7 @@ namespace SafeArgon2
 
             if (fullUlongs > toBlit.Count - destOffset)
             {
-                throw new ArgumentException("Cannot write more than remaining space");
+                throw new ArgumentException("Cannot write more than remaining space.");
             }
 
             // Convert full 8-byte chunks to ulong.
@@ -56,7 +56,7 @@ namespace SafeArgon2
 
                 if (destOffset + fullUlongs >= toBlit.Count)
                 {
-                    throw new ArgumentException("Not enough space for remainder");
+                    throw new ArgumentException("Not enough space for remainder.");
                 }
 
                 toBlit.Array[toBlit.Offset + destOffset + fullUlongs] = extra;

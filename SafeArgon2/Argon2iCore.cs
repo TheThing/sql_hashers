@@ -2,20 +2,20 @@
 
 namespace SafeArgon2
 {
-    public class Argon2iCore : Argon2Core
+    internal class Argon2iCore : Argon2Core
     {
-        private readonly static ulong[] _zeroBlock = new ulong[128];
+        private readonly ulong[] _zeroBlock = new ulong[128];
 
         internal class PseudoRands : IArgon2PseudoRands
         {
-            private ulong[] _rands;
+            private readonly ulong[] _rands;
 
             public PseudoRands(ulong[] rands)
             {
                 _rands = rands;
             }
 
-            public ulong PseudoRand(int segment, int prevLane, int prevOffset)
+            public ulong PseudoRand(int segment, int _, int __)
             {
                 return _rands[segment];
             }
@@ -56,7 +56,7 @@ namespace SafeArgon2
                     Compress(tmpBlock, inputBlock, new ArraySegment<ulong>(_zeroBlock, 0, 128));
                     Compress(addressBlock, tmpBlock, new ArraySegment<ulong>(_zeroBlock, 0, 128));
 
-                    // Note: Keep in mind that to view memory values of a segment you should use offset.
+                    // Note: Keep in mind that to view memory values of a segment under debug you should use offset.
                 }
 
                 rands[i] = addressBlock.Array[addressBlock.Offset + ival];

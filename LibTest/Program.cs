@@ -88,7 +88,7 @@ namespace LibTest
             Console.ReadKey();
         }
 
-        static void TestArgon2Performance()
+        static void TestArgon2idPerformance()
         {
             int numIterations = 10;
 #if DEBUG
@@ -124,7 +124,7 @@ namespace LibTest
             }
         }
 
-        static void TestBlake2Performance()
+        static void TestBlake2bPerformance()
         {
             var expected = new byte[] {
                 0xef, 0x15, 0xea, 0xf9, 0x2d, 0x5e, 0x33, 0x53, 0x45, 0xa3, 0xe1, 0xd9, 0x77, 0xbc, 0x7d, 0x87,

@@ -10,15 +10,22 @@
             ulong[] m = new ulong[16];
 
             for (var i = 0; i < 8; ++i)
+            {
                 v[i] = Hash[i];
+            }
+
             for (var i = 0; i < 8; ++i)
+            {
                 v[i + 8] = BLAKE2Constants.IV[i];
+            }
 
             v[12] ^= TotalSegmentsLow;
             v[13] ^= TotalSegmentsHigh;
 
             if (isFinal)
+            {
                 v[14] = ~v[14];
+            }
 
             for (var i = 0; i < 16; ++i)
             {
@@ -142,7 +149,9 @@
             }
 
             for (var i = 0; i < 8; ++i)
+            {
                 Hash[i] ^= v[i] ^ v[i + 8];
+            }
         }
     }
 }

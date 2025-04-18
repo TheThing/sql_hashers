@@ -4,12 +4,22 @@ using System.IO;
 
 namespace SafeArgon2
 {
-    public class LittleEndianActiveStream : Stream
+    internal class LittleEndianActiveStream : Stream
     {
+        private LinkedList<Action> _bufferSetupActions;
+
+        private byte[] _buffer;
+
+        private int _bufferOffset;
+
+        private int _bufferAvailable;
+
         public LittleEndianActiveStream(byte[] buffer = null)
         {
             _bufferSetupActions = new LinkedList<Action>();
+
             _buffer = buffer;
+
             _bufferAvailable = _buffer?.Length ?? 0;
         }
 
@@ -48,7 +58,7 @@ namespace SafeArgon2
 
         public void Expose(ArraySegment<ulong> mem)
         {
-            _bufferSetupActions.AddLast(() => BufferSpan(mem));
+            _bufferSetupActions.AddLast(() => BufferArraySegment(mem));
         }
 
         public void Expose(Stream subStream)
@@ -59,6 +69,7 @@ namespace SafeArgon2
             }
         }
 
+        // TODO: Check if it's possible to make it faster.
         public void ClearBuffer()
         {
             for (int i = 0; i < _buffer.Length; ++i)
@@ -67,10 +78,6 @@ namespace SafeArgon2
             }
 
             _bufferAvailable = 0;
-        }
-
-        public override void Flush()
-        {
         }
 
         public override int Read(byte[] buffer, int offset, int count)
@@ -85,7 +92,7 @@ namespace SafeArgon2
                 {
                     if (_bufferSetupActions.Count == 0)
                     {
-                        // there's nothing left to queue up - we read what we could
+                        // There's nothing left to queue up - we read what we could.
                         return totalRead;
                     }
 
@@ -93,11 +100,11 @@ namespace SafeArgon2
 
                     _bufferSetupActions.RemoveFirst();
 
-                    // we are safe to assume that offset becomes 0 after that call
+                    // We are safe to assume that offset becomes 0 after that call.
                     available = _bufferAvailable;
                 }
 
-                // if we only need to read part of available - reduce that
+                // If we only need to read part of available - reduce that.
                 available = Math.Min(available, count - totalRead);
 
                 Array.Copy(_buffer, _bufferOffset, buffer, offset, available);
@@ -114,18 +121,20 @@ namespace SafeArgon2
 
         public override long Seek(long offset, SeekOrigin origin)
         {
-            throw new NotSupportedException("LittleEndianActiveStream is non-seekable");
+            throw new NotSupportedException("LittleEndianActiveStream is non-seekable.");
         }
 
         public override void SetLength(long value)
         {
-            throw new NotSupportedException("LittleEndianActiveStream is an actual Stream that doesn't support length");
+            throw new NotSupportedException("LittleEndianActiveStream is an actual Stream that doesn't support length.");
         }
 
         public override void Write(byte[] buffer, int offset, int count)
         {
             _bufferSetupActions.AddLast(() => BufferArray(buffer, offset, count));
         }
+
+        public override void Flush() {}
 
         private void BufferSubStream(Stream stream)
         {
@@ -159,8 +168,7 @@ namespace SafeArgon2
             Array.Copy(value, offset, _buffer, 0, length);
         }
 
-        // TODO: Rename to BufferArraySegment.
-        private void BufferSpan(ArraySegment<ulong> mem)
+        private void BufferArraySegment(ArraySegment<ulong> mem)
         {
             int byteLength = mem.Count * sizeof(ulong);
 
@@ -204,45 +212,13 @@ namespace SafeArgon2
             _bufferAvailable = size;
         }
 
-        private LinkedList<Action> _bufferSetupActions;
+        public override bool CanRead => throw new NotImplementedException();
 
-        private byte[] _buffer;
+        public override bool CanSeek => throw new NotImplementedException();
 
-        private int _bufferOffset;
+        public override bool CanWrite => throw new NotImplementedException();
 
-        private int _bufferAvailable;
-
-        public override bool CanRead
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public override bool CanSeek
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public override bool CanWrite
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public override long Length
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
+        public override long Length => throw new NotImplementedException();
 
         public override long Position
         {
