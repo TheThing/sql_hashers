@@ -55,40 +55,19 @@ sudo cp /YOUR_PATH/SafeArgon2.dll /var/opt/mssql/data/SafeArgon2.dll
 
 ```sql
 -- Register assembly (path may vary)
-CREATE ASSEMBLY SafeArgon2
-FROM '/var/opt/mssql/SafeArgon2.dll'
-WITH PERMISSION_SET = SAFE;
+CREATE ASSEMBLY SafeArgon2 FROM '/var/opt/mssql/data/SafeArgon2.dll' WITH PERMISSION_SET = SAFE;
 GO
 
 -- Create SQL function from exported method
-CREATE FUNCTION dbo.Argon2idHash (
-    @password NVARCHAR(MAX),
-    @salt NVARCHAR(MAX),
-    @secret NVARCHAR(MAX),
-    @associatedData NVARCHAR(MAX),
-    @parallelism INT,
-    @iterations INT,
-    @memorySize INT,
-    @hashLength INT
-)
-RETURNS NVARCHAR(MAX)
-AS EXTERNAL NAME SafeArgon2.[SafeArgon2.PasswordHasher].Argon2idHash;
+CREATE FUNCTION dbo.Argon2idHash (@password NVARCHAR(MAX), @salt NVARCHAR(MAX), @secret NVARCHAR(MAX), @associatedData NVARCHAR(MAX), @parallelism INT, @iterations INT, @memorySize INT, @hashLength INT)
+RETURNS NVARCHAR(MAX) AS EXTERNAL NAME SafeArgon2.[SafeArgon2.PasswordHasher].Argon2idHash;
 GO
 ```
 
 ## Sample Query
 
 ```sql
-SELECT dbo.Argon2idHash(
-    N'MyPassword',
-    N'MySalt',
-    N'',
-    N'',
-    16,
-    15,
-    4096,
-    32
-);
+SELECT dbo.Argon2idHash(N'Hello', N'qwerty12345', N'', N'', 16, 15, 4096, 32);
 ```
 
 ---
