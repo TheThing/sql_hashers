@@ -59,9 +59,9 @@ If you're building this DLL yourself, make sure your project targets **.NET Fram
 
 ## 🧪 Example SQL Usage
 
-Once compiled, the resulting `SafeArgon2.dll` can be registered and used in Microsoft SQL Server on Linux:
+Once compiled, the resulting `SafeArgon2.dll` can be registered and used in Microsoft SQL Server on Linux.
 
-- Copy the DLL to SQL Server Data Directory. Make sure the DLL is accessible to the SQL Server process:
+Copy the DLL to SQL Server Data Directory. Make sure the DLL is accessible to the SQL Server process.
 
 ```bash
 sudo cp /YOUR_PATH/SafeArgon2.dll /var/opt/mssql/data/SafeArgon2.dll
