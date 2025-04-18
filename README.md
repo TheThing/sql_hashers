@@ -43,6 +43,20 @@ To make this work under those limitations, the implementation was **rewritten** 
 
 ---
 
+## 🖥️ Target Platform
+
+This library is built for:
+
+- **.NET Framework 4.7.2** or higher
+- **Microsoft SQL Server on Linux**
+- **CLR Integration with `PERMISSION_SET = SAFE`**
+
+> ⚠️ This project is **not compatible with .NET Core**, .NET 5+, or assemblies requiring `EXTERNAL_ACCESS` or `UNSAFE` permissions.
+
+If you're building this DLL yourself, make sure your project targets **.NET Framework 4.7.2**. You may also try higher version.
+
+---
+
 ## 🧪 Example SQL Usage
 
 Once compiled, the resulting `SafeArgon2.dll` can be registered and used in Microsoft SQL Server on Linux:
