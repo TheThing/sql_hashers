@@ -1,4 +1,4 @@
-# SafeArgon2
+# Safe Argon2id
 
 A **safe**, **single-threaded**, and **fully standalone** implementation of the **Argon2id** password hashing algorithm in **pure C#**.
 
@@ -46,6 +46,12 @@ To make this work under those limitations, the implementation was **rewritten** 
 ## 🧪 Example SQL Usage
 
 Once compiled, the resulting `SafeArgon2.dll` can be registered and used in Microsoft SQL Server on Linux:
+
+- Copy the DLL to SQL Server Data Directory. Make sure the DLL is accessible to the SQL Server process:
+
+```bash
+sudo cp /YOUR_PATH/SafeArgon2.dll /var/opt/mssql/data/SafeArgon2.dll
+```
 
 ```sql
 -- Register assembly (path may vary)
