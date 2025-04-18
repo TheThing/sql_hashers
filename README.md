@@ -90,5 +90,3 @@ SELECT dbo.Argon2idHash(
     32
 );
 ```
-
-
