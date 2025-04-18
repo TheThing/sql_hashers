@@ -72,7 +72,7 @@ CREATE FUNCTION dbo.Argon2idHash (
     @hashLength INT
 )
 RETURNS NVARCHAR(MAX)
-AS EXTERNAL NAME SafeArgon2.[SafeArgon2.PasswordHasher].HashPassword;
+AS EXTERNAL NAME SafeArgon2.[SafeArgon2.PasswordHasher].Argon2idHash;
 GO
 ```
 
@@ -84,8 +84,8 @@ SELECT dbo.Argon2idHash(
     N'MySalt',
     N'',
     N'',
-    1,
-    10,
+    16,
+    15,
     4096,
     32
 );
