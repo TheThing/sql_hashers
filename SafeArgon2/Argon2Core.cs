@@ -132,7 +132,9 @@ namespace SafeArgon2
                 int ulongIndex = i / sizeof(ulong);
                 int byteOffset = i % sizeof(ulong);
 
-                // Calculate shift value in bits: byteOffset * 8
+                // Extract each byte from the ulong value in little-endian order.
+                // We shift the 64-bit value right by (byteOffset * 8) bits to isolate the desired byte,
+                // then cast to byte to store it in the result array.
                 result[i] = (byte)(source.Array[source.Offset + ulongIndex] >> (byteOffset * 8));
             }
 
