@@ -1,10 +1,151 @@
-# Safe Argon2id
+# Safe & External Argon2id
+
+This is a library to implement argon2id password checking in MS SQL Server that is **both** runnable in **SAFE** mode as well as a faster and more compliant **UNSAFE** mode.
+
+It's split into two libraries:
+
+## ExternalArgon2
+
+An argon2id specification compliant implementation for MS SQL Server that requires **UNSAFE** permission in `CREATE ASSEMBLY` and therefore only usable on MS SQL Server running on Windows.
+
+## SafeArgon2
+
+An argon2id specification compliant **(non-parallel)** implementation for MS SQL Sever that is runnable in **SAFE** permission in `CREATE ASSEMBLY` and therefore usable in MS SQL Server in Linux (as well as Windows).
+
+# Installation
+
+## Adding SafeArgon2
+
+```bash
+sudo cp /YOUR_PATH/SafeArgon2.dll /var/opt/mssql/data/SafeArgon2.dll
+```
+
+```sql
+---- Optional: Set trustworthy ON so we can import the assembly
+--USE master
+--ALTER DATABASE master SET TRUSTWORTHY ON;
+--go
+
+CREATE ASSEMBLY ClrArgon2 FROM '/var/opt/mssql/data/SafeArgon2.dll' WITH PERMISSION_SET = SAFE;
+GO
+```
+
+## Adding ExternalArgon2
+
+Copy over bundled dll for ExternalArgon2 in a folder of your choosing (I'm using `C:\SQL2022\MsArgon2\External`) and then run:
+
+```sql
+---- Optional: Set trustworthy ON so we can import the assembly
+--USE master
+--ALTER DATABASE master SET TRUSTWORTHY ON;
+--go
+
+CREATE ASSEMBLY ClrArgon2 FROM 'C:\SQL2022\MsArgon2\External\ExternalArgon2.bundled.dll' WITH PERMISSION_SET = UNSAFE;
+GO
+```
+
+## Turning trustworthy back off again
+
+You can run the following code to register our clr as safe and turn trustworthy back off
+
+```sql
+DECLARE @Hash BINARY(64),
+        @ClrName NVARCHAR(4000),
+        @AssemblySize INT,
+        @MvID UNIQUEIDENTIFIER;
+
+SELECT  @Hash = HASHBYTES(N'SHA2_512', af.[content]),
+        @ClrName = CONVERT(NVARCHAR(4000), ASSEMBLYPROPERTY(af.[name],
+                N'CLRName')),
+        @AssemblySize = DATALENGTH(af.[content]),
+        @MvID = CONVERT(UNIQUEIDENTIFIER, ASSEMBLYPROPERTY(af.[name], N'MvID'))
+FROM    sys.assembly_files af
+  JOIN  sys.assemblies a ON (af.assembly_id = a.assembly_id)
+WHERE   a.name = 'ClrArgon2'
+AND     af.[file_id] = 1;
+
+SELECT  @ClrName, @AssemblySize, @MvID, @Hash;
+
+EXEC sys.sp_add_trusted_assembly @Hash, @ClrName;
+GO
+
+ALTER DATABASE master SET TRUSTWORTHY OFF;
+go
+```
+
+# API
+
+Both library have consistent API. They both exposes 3 helper functions:
+```cs
+public static void Argon2id_hash(string password, out string output);
+public static void Argon2id_hash_custom(string password, byte parallel, short memory, byte iterations, byte bc, out string output);
+public static int Argon2id_verify(string password, string hash);
+```
+
+## Register Procedure
+
+```sql
+CREATE PROCEDURE dbo.[argon2id_hash] (@password [nvarchar](256), @hash [nvarchar](256) OUT)
+AS EXTERNAL NAME [ClrArgon2].[MsSqlArgon2].[Argon2id_hash]
+GO
+CREATE PROCEDURE dbo.[argon2id_hash_custom] (@password [nvarchar](256), @parallel [tinyint], @memory [smallint], @iterations [tinyint], @bc [tinyint], @output [nvarchar](256) OUT)
+AS EXTERNAL NAME [ClrArgon2].[MsSqlArgon2].[Argon2id_hash_custom]
+GO
+CREATE PROCEDURE dbo.[argon2id_verify] (@i [nvarchar](256), @h [nvarchar](256))
+AS EXTERNAL NAME [ClrArgon2].[MsSqlArgon2].[Argon2id_verify]
+GO
+```
+
+#### `PROCEDURE [argon2id_hash] (@password [nvarchar](256), @hash [nvarchar](256) OUT)`
+
+Generate new salt and create an MsSqlArgon2 formatted string. The string contains within it both the salt and the hash.
+This function generates an argon2id using the same defaults that bitwarden uses which is:
+
+```cs
+new settings { parallel = 4, memory = 64, iterations = 3, bc = 33 }
+```
+
+**Example:**
+```sql
+DECLARE @Hashed NVARCHAR(256);
+exec dbo.[argon2id_hash] 'My password', @Hashed output;
+-- @Hashed = '2$GdrGCqszJmUq3kfKLt+gnWCb$AFMqejAkQfh9JaBq0A0XmSVy25Ev8pzfiHCS2ghyGpNv'
+```
+
+#### `PROCEDURE [argon2id_hash_custom] (@password [nvarchar](256), @parallel [tinyint], @memory [smallint], @iterations [tinyint], @bc [tinyint], @output [nvarchar](256) OUT)`
+
+Generate new salt using custom argon2id options for parallel, memory, iterations and bc.
+Keep in mind, the parameter `@memory` specifies memory usage in **megabytes**.
+
+This will return an MsSqlArgon2 formatted string containing all the options used.
+
+**Example:**
+```sql
+DECLARE @Hashed NVARCHAR(256);
+exec dbo.[argon2id_hash_custom] 'Hello world', 1, 1, 1, 33, @Hashed output;
+-- @Hashed = '1$p=1;m=1;i=1;bc=33$w9tFGHy7W1NtNcT/BMKwXVyh$fEWUIwagG0yEVO55pOT5fxRJZOc9xCKzOMgK9JWG2C75'
+```
+
+#### `PROCEDURE dbo.[argon2id_verify] (@i [nvarchar](256), @h [nvarchar](256))`
+
+Verifies that the password `@i` matches the MsSqlArgon2 formatted hash `@h`.
+Returns `0` for failure and `1` for success.
+
+**Example:**
+```sql
+DECLARE @Verified AS INT;
+exec @Verified = dbo.[argon2id_verify] 'Hello world', '1$p=1;m=1;i=1;bc=33$w9tFGHy7W1NtNcT/BMKwXVyh$fEWUIwagG0yEVO55pOT5fxRJZOc9xCKzOMgK9JWG2C75';
+-- @Verified = 1
+```
+
+---
+
+# Information on SafeArgon2
 
 A **safe**, **single-threaded**, and **fully standalone** implementation of the **Argon2id** password hashing algorithm in **pure C#**.
 
 This project is designed for use as a **CLR assembly in Microsoft SQL Server on Linux**, where features like `unsafe` code, threading, and external dependencies are not allowed in assemblies with `PERMISSION_SET = SAFE`.
 
----
 
 ## ✅ Features
 
