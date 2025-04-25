@@ -13,13 +13,17 @@ namespace ConsoleTest
         const bool debug = false;
         static void Main(string[] args)
         {
-            Console.WriteLine("");
-            TestExternalArgon2();
-            Console.WriteLine("");
-            Console.WriteLine("");
-            TestSafeArgon2();
-            Console.WriteLine("");
-            Console.WriteLine("");
+            for (int i = 0; i < 2; i++)
+            {
+                Console.WriteLine("");
+                TestExternalArgon2();
+                Console.WriteLine("");
+                Console.WriteLine("");
+                TestSafeArgon2();
+                Console.WriteLine("");
+                Console.WriteLine("");
+            }
+            Console.WriteLine("Done...");
 
             Console.ReadKey();
         }
@@ -60,8 +64,6 @@ namespace ConsoleTest
                 Console.WriteLine("Works in Safe? {0}", SafeArgon2.MsSqlArgon2.Argon2id_verify("Hello", hash));
                 Console.WriteLine();
             }
-
-            return;
 
 
             sw = new Stopwatch();
@@ -145,8 +147,6 @@ namespace ConsoleTest
                 Console.WriteLine("Works in External? {0}", ExternalArgon2.MsSqlArgon2.Argon2id_verify("Hello", hash));
                 Console.WriteLine();
             }
-
-            return;
 
             sw = new Stopwatch();
             sw.Start();
