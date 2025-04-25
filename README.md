@@ -138,6 +138,53 @@ exec @Verified = dbo.[argon2id_verify] 'Hello world', '1$p=1;m=1;i=1;bc=33$w9tFG
 -- @Verified = 1
 ```
 
+
+# Performance consideration between SafeArgon2 and ExternalArgon2
+
+Here are some basic execution numbers.
+
+#### ConsoleTest
+```
+ExternalArgon2 regular     = 00:00:00.1224412
+ExternalArgon2 fast        = 00:00:00.0074187
+ExternalArgon2 slower      = 00:00:01.4640895
+ExternalArgon2 slow        = 00:00:02.7076549
+ExternalArgon2 slow parall = 00:00:00.8820149
+
+SafeArgon2 regular         = 00:00:00.2965957
+SafeArgon2 fast            = 00:00:00.0066044
+SafeArgon2 slower          = 00:00:01.5480459
+SafeArgon2 slow            = 00:00:02.8710398
+SafeArgon2 slow parallel   = 00:00:02.9125752
+```
+
+```
+regular:       { parallel = 4, memory =  64, iterations =  3, bc = 33 } (Bitwarden defaults)
+fast:          { parallel = 1, memory =   4, iterations =  1, bc = 33 }
+slower:        { parallel = 1, memory = 128, iterations =  8, bc = 32 }
+slow:          { parallel = 1, memory = 128, iterations = 15, bc = 32 }
+slow parallel: { parallel = 4, memory = 128, iterations = 15, bc = 32 }
+```
+
+#### Inside an MS SQL Server
+```sql
+SET STATISTICS TIME ON;
+DECLARE @Hashed NVARCHAR(256);
+exec dbo.[external_argon2id_hash] 'Hello world', @Hashed output;
+exec dbo.[safe_argon2id_hash] 'Hello world', @Hashed output;
+```
+
+```
+SQL Server parse and compile time: 
+   CPU time = 0 ms, elapsed time = 0 ms.
+
+ SQL Server Execution Times:
+   CPU time = 0 ms,  elapsed time = 167 ms.
+
+ SQL Server Execution Times:
+   CPU time = 328 ms,  elapsed time = 345 ms.
+```
+
 ---
 
 # Information on SafeArgon2
